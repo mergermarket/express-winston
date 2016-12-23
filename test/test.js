@@ -292,7 +292,7 @@ describe('express-winston', function () {
       middleware.length.should.eql(3);
     });
 
-    it('should not have an empty body in meta.req when invoked on a route with an empty response body', function () {
+    it('should not have an empty body in meta.req when invoked on a route with an empty request body', function () {
       function next(req, res, next) {
         res.end();
       }
@@ -308,6 +308,25 @@ describe('express-winston', function () {
         Object.keys(result.log.meta.req).indexOf('body').should.eql(-1);
       });
     });
+
+    it('should not have an empty body in meta.req when invoked on a route with a content-type of multipart/form-data', function () {
+      function next(req, res, next) {
+        res.end();
+      }
+      var testHelperOptions = {
+        next: next,
+        req: {
+          body: "some bytes here",
+          routeLevelAddedProperty: 'value that should be logged',
+          headers: {'content-type': 'multipart/form-data'},
+          url: '/hello'
+        },
+      };
+      return loggerTestHelper(testHelperOptions).then(function (result) {
+        Object.keys(result.log.meta.req).indexOf('body').should.eql(-1);
+      });
+    });
+
 
     it('should not invoke the transport when invoked on a route with transport level of "error"', function () {
       function next(req, res, next) {
@@ -531,6 +550,19 @@ describe('express-winston', function () {
       it('should contain a response time', function () {
         return loggerTestHelper(testHelperOptions).then(function (result) {
           result.log.meta.responseTime.should.be.within(120, 130);
+        });
+      });
+    });
+
+    describe('when middleware function is invoked on a route returns multipart/form-data', function() {
+      it('should not log a response body', function() {
+        var bodyObject = "some bytes";
+        function next(req, res, next) {
+          res.setHeader('content-type', 'multipart/form-data');
+          res.end(bodyObject);
+        }
+        return loggerTestHelper({next: next}).then(function(result) {
+            result.log.meta.res.body.should.be.empty();
         });
       });
     });

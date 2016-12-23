@@ -228,8 +228,11 @@ exports.logger = function logger(options) {
                 if (chunk) {
                   var isJson = (res._headers && res._headers['content-type']
                     && res._headers['content-type'].indexOf('json') >= 0);
-
-                  logData.res.body = bodyToString(chunk, isJson);
+                  if(res._headers['content-type'] && res._headers['content-type'].indexOf('multipart/form-data') === -1) {
+                    logData.res.body = bodyToString(chunk, isJson);
+                  } else {
+                    logData.res.body = ""
+                  }
                 }
               }
 
@@ -239,18 +242,19 @@ exports.logger = function logger(options) {
               var bodyWhitelist = _.union(options.bodyWhitelist, (req._routeWhitelists.body || []));
               var blacklist = _.union(options.bodyBlacklist, (req._routeBlacklists.body || []));
 
-              var filteredBody = null;
-
-              if ( req.body !== undefined ) {
-                  if (blacklist.length > 0 && bodyWhitelist.length === 0) {
-                    var whitelist = _.difference(Object.keys(req.body), blacklist);
-                    filteredBody = filterObject(req.body, whitelist, options.requestFilter);
-                  } else {
-                    filteredBody = filterObject(req.body, bodyWhitelist, options.requestFilter);
-                  }
-              }
-
               if (logData.req) {
+                var filteredBody = null;
+
+                if ( req.body !== undefined && ( req.headers == undefined || req.headers['content-type'] == undefined ||
+                    ( req.headers !== undefined && req.headers['content-type'] && req.headers['content-type'].indexOf('multipart/form-data') === -1 ))) {
+                    if (blacklist.length > 0 && bodyWhitelist.length === 0) {
+                        var whitelist = _.difference(Object.keys(req.body), blacklist);
+                        filteredBody = filterObject(req.body, whitelist, options.requestFilter);
+                    } else {
+                        filteredBody = filterObject(req.body, bodyWhitelist, options.requestFilter);
+                    }
+                }
+
                 if (filteredBody) {
                   logData.req.body = filteredBody;
                 } else {
