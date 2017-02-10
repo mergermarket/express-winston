@@ -250,8 +250,10 @@ exports.logger = function logger(options) {
                     if (blacklist.length > 0 && bodyWhitelist.length === 0) {
                         var whitelist = _.difference(Object.keys(req.body), blacklist);
                         filteredBody = filterObject(req.body, whitelist, options.requestFilter);
-                    } else {
+                    } else if (bodyWhitelist.length > 0) {
                         filteredBody = filterObject(req.body, bodyWhitelist, options.requestFilter);
+                    } else {
+                      filteredBody = req.body
                     }
                 }
 

@@ -374,6 +374,20 @@ describe('express-winston', function () {
       });
     });
 
+    it('should print log when no bodyWhitelist', function() {
+      expressWinston.bodyBlacklist = [];
+      
+      var options = {
+        req: {body: {foo: 'bar', baz: 'qux'}}
+      };
+      return loggerTestHelper(options).then(function (result) {
+        expressWinston.bodyBlacklist.push('potato');
+
+        result.log.meta.req.body.should.have.property('foo');
+        result.log.meta.req.body.should.have.property('baz');
+      });
+    });
+
     it('should use the exported bodyWhitelist', function() {
       var originalWhitelist = expressWinston.bodyWhitelist;
       expressWinston.bodyWhitelist = ['foo'];
