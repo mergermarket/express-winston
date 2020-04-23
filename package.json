@@ -55,7 +55,7 @@
     "mocha": "^2.4.5",
     "node-mocks-http": "^1.5.1",
     "promise": "^7.1.1",
-    "should": "^8.2.2",
+    "should": "^13.2.3",
     "travis-cov": "^0.2.5",
     "winston": ">=1.x"
   },
